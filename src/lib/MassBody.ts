@@ -4,10 +4,10 @@ import { Vector2 } from "./Vector2";
  * Can be changed according to intended physical effects.
  * Using the real value would be pointless because our masses and radii are very small.
  */
-export const GRAVITATIONAL_CONSTANT = 100;
+export const GRAVITATIONAL_CONSTANT = 300;
 
 export class MassBody {
-    public static readonly MAX_LAST_POSITIONS = 50;
+    public static readonly MAX_LAST_POSITIONS = 60;
 
     private accel = new Vector2(0, 0);
     public lastpositions = new Array<Vector2>(MassBody.MAX_LAST_POSITIONS);
@@ -31,7 +31,8 @@ export class MassBody {
     }
 
     update(delta: number, bodies: MassBody[]) {
-        console.log(delta, 1 / delta);
+        // We could unshift points and delete from tail but
+        // that would not be optimized for a simple problem
         this.lastpositions[this.lastpos_counter] = this.pos;
 
         this.lastpos_start = this.lastpos_counter;
