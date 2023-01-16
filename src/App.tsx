@@ -104,8 +104,8 @@ export default function App() {
 
         p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
 
-        ox += movex / 2;
-        oy += movey / 2;
+        ox += movex;
+        oy += movey;
     };
 
     return <Sketch setup={setup} draw={draw} mouseDragged={mouseDragged} />;
