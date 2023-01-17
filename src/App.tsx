@@ -56,40 +56,7 @@ export default function App() {
                 body.radius * 2
             );
 
-            for (let i = body.lastpos_start; i >= 0; i--) {
-                if (
-                    i === 0 &&
-                    body.lastpos_start == MassBody.MAX_LAST_POSITIONS - 1
-                )
-                    break;
-
-                const lastpos = body.lastpositions[i];
-                const lastpos2 =
-                    i > 0
-                        ? body.lastpositions[i - 1]
-                        : body.lastpositions[MassBody.MAX_LAST_POSITIONS - 1];
-                p5.line(
-                    ox + lastpos.x,
-                    oy + lastpos.y,
-                    ox + lastpos2.x,
-                    oy + lastpos2.y
-                );
-            }
-
-            for (
-                let i = MassBody.MAX_LAST_POSITIONS - 1;
-                i > body.lastpos_start + 1;
-                i--
-            ) {
-                const lastpos = body.lastpositions[i];
-                const lastpos2 = body.lastpositions[i - 1];
-                p5.line(
-                    ox + lastpos.x,
-                    oy + lastpos.y,
-                    ox + lastpos2.x,
-                    oy + lastpos2.y
-                );
-            }
+            draw_tail(p5, body);
 
             body.update((1.5 * (now - lastTime)) / 1000, bodies);
         }
@@ -109,6 +76,40 @@ export default function App() {
     };
 
     return <Sketch setup={setup} draw={draw} mouseDragged={mouseDragged} />;
+}
+
+function draw_tail(p5: P5, body: MassBody) {
+    for (let i = body.lastpos_start; i >= 0; i--) {
+        if (i === 0 && body.lastpos_start == MassBody.MAX_LAST_POSITIONS - 1)
+            break;
+
+        const lastpos = body.lastpositions[i];
+        const lastpos2 =
+            i > 0
+                ? body.lastpositions[i - 1]
+                : body.lastpositions[MassBody.MAX_LAST_POSITIONS - 1];
+        p5.line(
+            ox + lastpos.x,
+            oy + lastpos.y,
+            ox + lastpos2.x,
+            oy + lastpos2.y
+        );
+    }
+
+    for (
+        let i = MassBody.MAX_LAST_POSITIONS - 1;
+        i > body.lastpos_start + 1;
+        i--
+    ) {
+        const lastpos = body.lastpositions[i];
+        const lastpos2 = body.lastpositions[i - 1];
+        p5.line(
+            ox + lastpos.x,
+            oy + lastpos.y,
+            ox + lastpos2.x,
+            oy + lastpos2.y
+        );
+    }
 }
 
 function fill_random_bodies(

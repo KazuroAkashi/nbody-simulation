@@ -31,17 +31,7 @@ export class MassBody {
     }
 
     update(delta: number, bodies: MassBody[]) {
-        // We could unshift points and delete from tail but
-        // that would not be optimized for a simple problem
-        this.lastpositions[this.lastpos_counter] = this.pos;
-
-        this.lastpos_start = this.lastpos_counter;
-
-        if (this.lastpos_counter == MassBody.MAX_LAST_POSITIONS - 1) {
-            this.lastpos_counter = 0;
-        } else {
-            this.lastpos_counter++;
-        }
+        this.update_lastpositions();
 
         let new_pos = this.pos
             .add(this.vel.multiply(delta))
@@ -57,8 +47,6 @@ export class MassBody {
             const totalrad = this.radius + body.radius;
 
             if (dir.length_sq() < totalrad * totalrad) {
-                const totalmass = this.mass + body.mass;
-
                 /**
                  * Positioning this object outside of the obj
                  * and transferring momentums
@@ -67,34 +55,10 @@ export class MassBody {
                     .get_pos()
                     .add(normal.multiply(-(this.radius + body.radius)));
 
-                const this_parallel = normal.multiply(this.vel.dot(normal));
-                const body_parallel = normal.multiply(body.vel.dot(normal));
-
-                this.vel = this.vel
-                    .subtract(this_parallel)
-                    .add(
-                        this_parallel
-                            .multiply((this.mass - body.mass) / totalmass)
-                            .add(
-                                body_parallel.multiply(
-                                    (2 * body.mass) / totalmass
-                                )
-                            )
-                    );
-
-                body.vel = body.vel
-                    .subtract(body_parallel)
-                    .add(
-                        body_parallel
-                            .multiply((body.mass - this.mass) / totalmass)
-                            .add(
-                                this_parallel.multiply(
-                                    (2 * this.mass) / totalmass
-                                )
-                            )
-                    );
+                this.transfer_momentums(body, normal);
             }
 
+            // Add gravitational acceleration
             new_accel = new_accel.add(
                 normal.multiply(
                     (GRAVITATIONAL_CONSTANT * body.mass) / dir.length_sq()
@@ -102,10 +66,47 @@ export class MassBody {
             );
         }
 
+        // Verlet integration
         this.vel = this.vel.add(
             this.accel.add(new_accel).multiply(delta * 0.5)
         );
         this.accel = new_accel;
         this.pos = new_pos;
+    }
+
+    private update_lastpositions() {
+        // We could unshift points and delete from tail but
+        // that would not be optimized for a simple problem
+        this.lastpositions[this.lastpos_counter] = this.pos;
+
+        this.lastpos_start = this.lastpos_counter;
+
+        if (this.lastpos_counter == MassBody.MAX_LAST_POSITIONS - 1) {
+            this.lastpos_counter = 0;
+        } else {
+            this.lastpos_counter++;
+        }
+    }
+
+    private transfer_momentums(body: MassBody, normal: Vector2) {
+        const totalmass = this.mass + body.mass;
+        const this_parallel = normal.multiply(this.vel.dot(normal));
+        const body_parallel = normal.multiply(body.vel.dot(normal));
+
+        this.vel = this.vel
+            .subtract(this_parallel)
+            .add(
+                this_parallel
+                    .multiply((this.mass - body.mass) / totalmass)
+                    .add(body_parallel.multiply((2 * body.mass) / totalmass))
+            );
+
+        body.vel = body.vel
+            .subtract(body_parallel)
+            .add(
+                body_parallel
+                    .multiply((body.mass - this.mass) / totalmass)
+                    .add(this_parallel.multiply((2 * this.mass) / totalmass))
+            );
     }
 }
